@@ -4,16 +4,18 @@ import { categories } from '@/data/links';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-white">
       <div className="max-w-6xl mx-auto">
         <Header />
-        <main className="px-4 py-8">
-          {categories.map((category) => (
-            <CategorySection key={category.id} category={category} />
-          ))}
+        <main className="px-6 pb-12">
+          <div className="bg-[#f8fafa] rounded-2xl p-8">
+            {categories.map((category) => (
+              <CategorySection key={category.id} category={category} />
+            ))}
+          </div>
         </main>
-        <footer className="py-6 px-4 text-center text-slate-500 text-sm border-t border-slate-800">
-          IP Link Partners Internal Portal
+        <footer className="py-8 px-4 text-center text-gray-400 text-sm">
+          <p>IP Link Partners Internal Portal</p>
         </footer>
       </div>
     </div>

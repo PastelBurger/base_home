@@ -13,27 +13,27 @@ export default function LinkCard({ name, url, color }: LinkCardProps) {
       className="
         group
         block
-        p-4
-        bg-slate-800
-        hover:bg-slate-700
-        border border-slate-700
-        hover:border-slate-600
-        rounded-lg
+        p-5
+        bg-white
+        border border-gray-200
+        rounded-xl
+        shadow-sm
+        hover:shadow-md
+        hover:-translate-y-0.5
         transition-all
         duration-200
-        hover:scale-[1.02]
       "
     >
       <div className="flex items-center gap-3">
         <div
-          className="w-2 h-2 rounded-full flex-shrink-0"
+          className="w-2.5 h-2.5 rounded-full flex-shrink-0"
           style={{ backgroundColor: color }}
         />
-        <span className="text-slate-200 group-hover:text-white font-medium flex-1 min-w-0 truncate">
+        <span className="text-gray-700 group-hover:text-gray-900 font-medium flex-1 min-w-0 truncate">
           {name}
         </span>
         <svg
-          className="w-4 h-4 flex-shrink-0 text-slate-500 group-hover:text-slate-300 transition-colors"
+          className="w-4 h-4 flex-shrink-0 text-gray-400 group-hover:text-teal-600 transition-colors"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
