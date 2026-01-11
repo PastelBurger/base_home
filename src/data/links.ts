@@ -2,6 +2,7 @@ export interface LinkItem {
   id: string;
   name: string;
   url: string;
+  highlighted?: boolean;
 }
 
 export interface Category {
@@ -29,6 +30,7 @@ export const categories: Category[] = [
     name: '내부서비스',
     color: '#16a34a', // green-600
     links: [
+      { id: 'duedate', name: '내부기일관리', url: 'https://due-date-manage-production.up.railway.app/', highlighted: true },
       { id: 'homepage', name: '홈페이지', url: 'https://www.iplp.co.kr' },
       { id: 'blog', name: '블로그', url: 'https://blog.naver.com/iplplaw' },
       { id: 'techipo', name: '기특상 랜딩페이지', url: 'https://tech-ipo.iplp.kr/' },

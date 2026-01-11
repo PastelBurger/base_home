@@ -27,6 +27,7 @@ export default function CategorySection({ category }: CategorySectionProps) {
             name={link.name}
             url={link.url}
             color={category.color}
+            highlighted={link.highlighted}
           />
         ))}
       </div>

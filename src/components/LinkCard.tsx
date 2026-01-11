@@ -2,38 +2,54 @@ interface LinkCardProps {
   name: string;
   url: string;
   color: string;
+  highlighted?: boolean;
 }
 
-export default function LinkCard({ name, url, color }: LinkCardProps) {
+export default function LinkCard({ name, url, color, highlighted }: LinkCardProps) {
   return (
     <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="
+      className={`
         group
         block
         p-5
-        bg-white
-        border border-gray-200
         rounded-xl
         shadow-sm
         hover:shadow-md
         hover:-translate-y-0.5
         transition-all
         duration-200
-      "
+        ${highlighted
+          ? 'bg-gradient-to-r from-teal-500 to-emerald-500 border-0 ring-2 ring-teal-300 ring-offset-2'
+          : 'bg-white border border-gray-200'
+        }
+      `}
     >
       <div className="flex items-center gap-3">
         <div
-          className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-          style={{ backgroundColor: color }}
+          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${highlighted ? 'bg-white' : ''}`}
+          style={highlighted ? {} : { backgroundColor: color }}
         />
-        <span className="text-gray-700 group-hover:text-gray-900 font-medium flex-1 min-w-0 truncate">
+        <span className={`font-medium flex-1 min-w-0 truncate ${
+          highlighted
+            ? 'text-white'
+            : 'text-gray-700 group-hover:text-gray-900'
+        }`}>
           {name}
         </span>
+        {highlighted && (
+          <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full font-medium">
+            NEW
+          </span>
+        )}
         <svg
-          className="w-4 h-4 flex-shrink-0 text-gray-400 group-hover:text-teal-600 transition-colors"
+          className={`w-4 h-4 flex-shrink-0 transition-colors ${
+            highlighted
+              ? 'text-white/70 group-hover:text-white'
+              : 'text-gray-400 group-hover:text-teal-600'
+          }`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
