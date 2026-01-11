@@ -1,9 +1,14 @@
 export default function Header() {
   return (
-    <header className="py-12 px-4 text-center">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-teal-600 mb-6">
+    <header
+      className="py-16 px-4 text-center rounded-b-3xl mb-8"
+      style={{
+        background: 'linear-gradient(135deg, #e0f2fe 0%, #ccfbf1 50%, #fef3c7 100%)'
+      }}
+    >
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg mb-6">
         <svg
-          className="w-8 h-8 text-white"
+          className="w-8 h-8 text-teal-600"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -19,7 +24,7 @@ export default function Header() {
       <h1 className="text-3xl font-bold text-gray-900 mb-3">
         IPLP 내부 포털
       </h1>
-      <p className="text-gray-500 text-lg">
+      <p className="text-gray-600 text-lg">
         자주 사용하는 사이트 모음
       </p>
     </header>
