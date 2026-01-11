@@ -35,6 +35,7 @@ export const categories: Category[] = [
       { id: 'techtest', name: '기특상 자가진단', url: 'https://tech-test.iplp.kr/' },
       { id: 'patent', name: '특허홍보 랜딩페이지', url: 'https://patent.iplp.kr/' },
       { id: 'pdftoword', name: 'PDF to Word', url: 'https://pdftotext-production-f148.up.railway.app' },
+      { id: 'meeting', name: '회의실 예약', url: 'https://eggstation.spacebring.com/suite/organizations/26837bc0-76ea-11ee-b697-57aa4850a640/rooms' },
     ]
   },
   {
