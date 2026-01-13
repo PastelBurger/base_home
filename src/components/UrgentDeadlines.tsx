@@ -5,6 +5,7 @@ import UrgentCard from './UrgentCard';
 
 interface CaseData {
   ourRef: string;
+  applicant: string;
   status: string;
   deadline: string;
   dDay: number;
@@ -82,6 +83,7 @@ export default function UrgentDeadlines() {
             <UrgentCard
               key={`${caseData.ourRef}-${index}`}
               ourRef={caseData.ourRef}
+              applicant={caseData.applicant}
               status={caseData.status}
               deadline={caseData.deadline}
               dDay={caseData.dDay}

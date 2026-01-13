@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 
 export interface CaseData {
   ourRef: string;
+  applicant: string;
   status: string;
   deadline: string;
   dDay: number;
@@ -47,6 +48,9 @@ export async function getUrgentDeadlines(): Promise<CaseData[]> {
     const deadlineIndex = headers.findIndex((h: string) =>
       h.includes('사건마감일') || h.includes('마감일')
     );
+    const applicantIndex = headers.findIndex((h: string) =>
+      h.includes('출원인') || h.includes('고객') || h.toUpperCase().includes('APPLICANT')
+    );
 
     if (ourRefIndex === -1 || deadlineIndex === -1) {
       console.error('Required columns not found');
@@ -61,6 +65,7 @@ export async function getUrgentDeadlines(): Promise<CaseData[]> {
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const ourRef = row[ourRefIndex] || '';
+      const applicant = applicantIndex !== -1 ? (row[applicantIndex] || '') : '';
       const status = statusIndex !== -1 ? (row[statusIndex] || '') : '';
       const deadlineStr = row[deadlineIndex] || '';
 
@@ -77,6 +82,7 @@ export async function getUrgentDeadlines(): Promise<CaseData[]> {
       if (dDay >= 0 && dDay <= 14) {
         cases.push({
           ourRef,
+          applicant,
           status,
           deadline: formatDeadline(deadline),
           dDay,

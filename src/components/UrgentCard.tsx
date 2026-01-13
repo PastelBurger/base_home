@@ -1,5 +1,6 @@
 interface UrgentCardProps {
   ourRef: string;
+  applicant: string;
   status: string;
   deadline: string;
   dDay: number;
@@ -30,7 +31,7 @@ function getUrgencyStyle(dDay: number) {
   }
 }
 
-export default function UrgentCard({ ourRef, status, deadline, dDay }: UrgentCardProps) {
+export default function UrgentCard({ ourRef, applicant, status, deadline, dDay }: UrgentCardProps) {
   const style = getUrgencyStyle(dDay);
   const targetUrl = 'https://due-date-manage-ver2-production.up.railway.app/';
 
@@ -60,20 +61,27 @@ export default function UrgentCard({ ourRef, status, deadline, dDay }: UrgentCar
         </span>
       </div>
 
-      {/* Middle: Case number */}
-      <div className="text-gray-900 font-semibold text-base mb-2 truncate">
+      {/* Case number */}
+      <div className="text-gray-900 font-semibold text-base mb-1 truncate">
         {ourRef}
       </div>
 
-      {/* Bottom: Status */}
+      {/* Applicant */}
+      {applicant && (
+        <div className="text-gray-700 text-sm mb-2 truncate">
+          {applicant}
+        </div>
+      )}
+
+      {/* Status */}
       {status && (
-        <div className="text-gray-600 text-sm mb-1 truncate">
+        <div className="text-gray-500 text-sm mb-1 truncate">
           {status}
         </div>
       )}
 
-      {/* Bottom: Deadline */}
-      <div className="text-gray-500 text-sm">
+      {/* Deadline */}
+      <div className="text-gray-400 text-sm">
         {deadline}
       </div>
     </a>
