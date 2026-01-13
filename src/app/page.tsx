@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import CategorySection from '@/components/CategorySection';
+import UrgentDeadlines from '@/components/UrgentDeadlines';
 import { categories } from '@/data/links';
 
 export default function Home() {
@@ -9,6 +10,7 @@ export default function Home() {
         <Header />
         <main className="px-6 pb-12">
           <div className="bg-[#f8fafa] rounded-2xl p-8">
+            <UrgentDeadlines />
             {categories.map((category) => (
               <CategorySection key={category.id} category={category} />
             ))}
