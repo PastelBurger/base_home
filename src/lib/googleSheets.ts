@@ -28,7 +28,7 @@ export async function getUrgentDeadlines(): Promise<CaseData[]> {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
-      range: 'Sheet1!A:Z', // Adjust range as needed
+      range: '진행중!A:Z',
     });
 
     const rows = response.data.values;
@@ -38,9 +38,15 @@ export async function getUrgentDeadlines(): Promise<CaseData[]> {
 
     // Assume first row is header
     const headers = rows[0];
-    const ourRefIndex = headers.findIndex((h: string) => h.toUpperCase().includes('OURREF') || h.includes('사건번호'));
-    const statusIndex = headers.findIndex((h: string) => h.includes('상태') || h.toUpperCase().includes('STATUS'));
-    const deadlineIndex = headers.findIndex((h: string) => h.includes('마감') || h.includes('기일') || h.toUpperCase().includes('DEADLINE'));
+    const ourRefIndex = headers.findIndex((h: string) =>
+      h.toUpperCase().includes('OURREF') || h.includes('사건번호') || h.includes('OUR REF')
+    );
+    const statusIndex = headers.findIndex((h: string) =>
+      h.includes('현재상태') || h.includes('상태') || h.toUpperCase().includes('STATUS')
+    );
+    const deadlineIndex = headers.findIndex((h: string) =>
+      h.includes('사건마감일') || h.includes('마감일')
+    );
 
     if (ourRefIndex === -1 || deadlineIndex === -1) {
       console.error('Required columns not found');
