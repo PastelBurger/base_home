@@ -31,6 +31,7 @@ export const categories: Category[] = [
     color: '#16a34a', // green-600
     links: [
       { id: 'duedate', name: '내부기일관리', url: 'https://due-date-manage-ver2-production.up.railway.app/', highlighted: true },
+      { id: 'revenue', name: '매출데이터 업로드', url: 'https://revenueupload-production.up.railway.app/login' },
       { id: 'homepage', name: '홈페이지', url: 'https://www.iplp.co.kr' },
       { id: 'blog', name: '블로그', url: 'https://blog.naver.com/iplplaw' },
       { id: 'techipo', name: '기특상 랜딩페이지', url: 'https://tech-ipo.iplp.kr/' },
