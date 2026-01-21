@@ -34,6 +34,7 @@ export const categories: Category[] = [
       { id: 'revenue', name: '매출데이터 업로드', url: 'https://revenueupload-production.up.railway.app/login' },
       { id: 'dashboard', name: '매출분석', url: 'https://dashrevenue-production.up.railway.app' },
       { id: 'mailsend', name: '메일발송', url: 'https://mailsend-production-c0b4.up.railway.app/' },
+      { id: 'estimate', name: '견적서작성', url: 'https://estimate-production-9b18.up.railway.app/' },
       { id: 'homepage', name: '홈페이지', url: 'https://www.iplp.co.kr' },
       { id: 'blog', name: '블로그', url: 'https://blog.naver.com/iplplaw' },
       { id: 'techipo', name: '기특상 랜딩페이지', url: 'https://tech-ipo.iplp.kr/' },
