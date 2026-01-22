@@ -32,7 +32,7 @@ export default function LinkCard({ name, url, color, highlighted }: LinkCardProp
           className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${highlighted ? 'bg-white' : ''}`}
           style={highlighted ? {} : { backgroundColor: color }}
         />
-        <span className={`font-medium flex-1 min-w-0 truncate ${
+        <span className={`font-medium flex-1 min-w-0 break-words ${
           highlighted
             ? 'text-white'
             : 'text-gray-700 group-hover:text-gray-900'

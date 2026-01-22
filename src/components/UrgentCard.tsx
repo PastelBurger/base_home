@@ -62,20 +62,20 @@ export default function UrgentCard({ ourRef, applicant, status, deadline, dDay }
       </div>
 
       {/* Case number */}
-      <div className="text-gray-900 font-semibold text-base mb-1 truncate">
+      <div className="text-gray-900 font-semibold text-base mb-1 break-words">
         {ourRef}
       </div>
 
       {/* Applicant */}
       {applicant && (
-        <div className="text-gray-700 text-sm mb-2 truncate">
+        <div className="text-gray-700 text-sm mb-2 break-words">
           {applicant}
         </div>
       )}
 
       {/* Status */}
       {status && (
-        <div className="text-gray-500 text-sm mb-1 truncate">
+        <div className="text-gray-500 text-sm mb-1 break-words">
           {status}
         </div>
       )}
