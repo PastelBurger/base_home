@@ -24,6 +24,7 @@ export const categories: Category[] = [
       { id: 'kista1', name: '특허 전략 개발원(사업공고)', url: 'https://biz.kista.re.kr/ippro//com/iprndMain/selectBusinessAnnounceList.do?bbsType=bs' },
       { id: 'kista2', name: '특허 전략 개발원(협력기관공고)', url: 'https://biz.kista.re.kr/ippro/com/iprndMain/selectBusinessAnnounceList.do?bbsType=ac' },
       { id: 'exportvoucher', name: '수출바우처', url: 'https://www.exportvoucher.com/usr/loginForm' },
+      { id: 'innovationvoucher', name: '혁신바우처', url: 'https://www.mssmiv.com/portal/regist/LoginForm' },
     ]
   },
   {
