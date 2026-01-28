@@ -42,14 +42,22 @@ export const categories: Category[] = [
     ]
   },
   {
+    id: 'techipo',
+    name: '기술특례상장',
+    color: '#dc2626', // red-600
+    links: [
+      { id: 'techipo-landing', name: '기특상 랜딩페이지', url: 'https://tech-ipo.iplp.kr/' },
+      { id: 'techtest', name: '기특상 자가진단', url: 'https://tech-test.iplp.kr/' },
+      { id: 'techform', name: '기특상강의설문', url: 'https://tech-test-form.iplp.kr/' },
+    ]
+  },
+  {
     id: 'website',
     name: '홈페이지 및 블로그',
     color: '#ea580c', // orange-600
     links: [
       { id: 'homepage', name: '홈페이지', url: 'https://www.iplp.co.kr' },
       { id: 'blog', name: '블로그', url: 'https://blog.naver.com/iplplaw' },
-      { id: 'techipo', name: '기특상 랜딩페이지', url: 'https://tech-ipo.iplp.kr/' },
-      { id: 'techtest', name: '기특상 자가진단', url: 'https://tech-test.iplp.kr/' },
       { id: 'patent', name: '특허홍보 랜딩페이지', url: 'https://patent.iplp.kr/' },
     ]
   },
