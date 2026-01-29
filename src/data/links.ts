@@ -49,6 +49,7 @@ export const categories: Category[] = [
       { id: 'techipo-landing', name: '기특상 랜딩페이지', url: 'https://tech-ipo.iplp.kr/' },
       { id: 'techtest', name: '기특상 자가진단', url: 'https://tech-test.iplp.kr/' },
       { id: 'techform', name: '기특상강의설문', url: 'https://tech-test-form.iplp.kr/' },
+      { id: 'techformadmin', name: '설문결과보기', url: 'https://tech-test-form.iplp.kr/admin' },
     ]
   },
   {
