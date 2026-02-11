@@ -39,6 +39,7 @@ export const categories: Category[] = [
       { id: 'estimate', name: '견적서작성', url: 'https://estimate-production-9b18.up.railway.app/' },
       { id: 'pdftoword', name: 'PDF to Word', url: 'https://pdftotext-production-f148.up.railway.app' },
       { id: 'meeting', name: '회의실 예약', url: 'https://eggstation.spacebring.com/suite/organizations/26837bc0-76ea-11ee-b697-57aa4850a640/rooms' },
+      { id: 'patentdoc', name: '명세서최종본다운', url: 'https://www.patent.go.kr/smart/jsp/ka/oncert/ReqDocContent.do' },
     ]
   },
   {
