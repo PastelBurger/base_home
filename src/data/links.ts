@@ -41,6 +41,7 @@ export const categories: Category[] = [
       { id: 'meeting', name: '회의실 예약', url: 'https://eggstation.spacebring.com/suite/organizations/26837bc0-76ea-11ee-b697-57aa4850a640/rooms' },
       { id: 'patentdoc', name: '명세서최종본다운', url: 'https://www.patent.go.kr/smart/jsp/ka/oncert/ReqDocContent.do' },
       { id: 'emailtracking', name: '이메일분석', url: 'https://emailtrackingfrontend-production.up.railway.app/' },
+      { id: 'stpviewer', name: 'STP뷰어', url: 'https://stp-viewer-production.up.railway.app/' },
     ]
   },
   {
