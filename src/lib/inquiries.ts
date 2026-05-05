@@ -17,6 +17,18 @@ export interface SheetSummary {
   newCount: number;
   highWaterMark: number;
   hasTimestamp: boolean;
+  debug?: SheetDebug;
+}
+
+export interface SheetDebug {
+  headers: string[];
+  tsColIdx: number;
+  tsHeader: string | null;
+  lastSeen: number;
+  lastSeenFormatted: string | null;
+  highWaterMarkFormatted: string | null;
+  sampleTimestamps: { row: number; raw: unknown; formatted: string | null; isNew: boolean }[];
+  rowCount: number;
 }
 
 export interface SheetDetail {
@@ -68,8 +80,14 @@ function emptySummary(sheet: InquirySheet): SheetSummary {
   return { sheet, totalCount: 0, newCount: 0, highWaterMark: 0, hasTimestamp: false };
 }
 
+function safeFormatSerial(n: number): string | null {
+  if (!looksLikeDateSerial(n)) return null;
+  return formatSerialDate(n);
+}
+
 export async function getInquirySummaries(
-  lastSeenMap: Record<string, number>
+  lastSeenMap: Record<string, number>,
+  options: { debug?: boolean } = {}
 ): Promise<SheetSummary[]> {
   const sheets = getSheetsClient();
   const spreadsheetId = getSheetId();
@@ -89,7 +107,22 @@ export async function getInquirySummaries(
 
     return INQUIRY_SHEETS.map((sheet, idx) => {
       const values = (valueRanges[idx]?.values || []) as unknown[][];
-      if (values.length === 0) return emptySummary(sheet);
+      if (values.length === 0) {
+        const empty = emptySummary(sheet);
+        if (options.debug) {
+          empty.debug = {
+            headers: [],
+            tsColIdx: -1,
+            tsHeader: null,
+            lastSeen: lastSeenMap[sheet] ?? 0,
+            lastSeenFormatted: safeFormatSerial(lastSeenMap[sheet] ?? 0),
+            highWaterMarkFormatted: null,
+            sampleTimestamps: [],
+            rowCount: 0,
+          };
+        }
+        return empty;
+      }
 
       const headers = values[0].map((h) => String(h ?? ''));
       const dataRows = values.slice(1);
@@ -98,31 +131,77 @@ export async function getInquirySummaries(
 
       if (tsCol === -1) {
         const total = dataRows.length;
-        return {
+        const summary: SheetSummary = {
           sheet,
           totalCount: total,
           newCount: Math.max(0, total - lastSeen),
           highWaterMark: total,
           hasTimestamp: false,
         };
+        if (options.debug) {
+          summary.debug = {
+            headers,
+            tsColIdx: -1,
+            tsHeader: null,
+            lastSeen,
+            lastSeenFormatted: null,
+            highWaterMarkFormatted: null,
+            sampleTimestamps: [],
+            rowCount: total,
+          };
+          console.log(`[inquiries] ${sheet} fallback rowCount mode`, summary.debug);
+        }
+        return summary;
       }
 
       let highWaterMark = 0;
       let newCount = 0;
-      for (const row of dataRows) {
+      const samples: SheetDebug['sampleTimestamps'] = [];
+      dataRows.forEach((row, ri) => {
         const cell = row[tsCol];
         const ts = typeof cell === 'number' ? cell : 0;
         if (ts > highWaterMark) highWaterMark = ts;
-        if (ts > lastSeen) newCount++;
-      }
+        const isNew = ts > lastSeen;
+        if (isNew) newCount++;
+        if (options.debug && (ri < 3 || ri >= dataRows.length - 3 || isNew)) {
+          samples.push({
+            row: ri + 2,
+            raw: cell,
+            formatted: typeof cell === 'number' ? safeFormatSerial(cell) : null,
+            isNew,
+          });
+        }
+      });
 
-      return {
+      const summary: SheetSummary = {
         sheet,
         totalCount: dataRows.length,
         newCount,
         highWaterMark,
         hasTimestamp: true,
       };
+      if (options.debug) {
+        summary.debug = {
+          headers,
+          tsColIdx: tsCol,
+          tsHeader: headers[tsCol],
+          lastSeen,
+          lastSeenFormatted: safeFormatSerial(lastSeen),
+          highWaterMarkFormatted: safeFormatSerial(highWaterMark),
+          sampleTimestamps: samples.slice(0, 20),
+          rowCount: dataRows.length,
+        };
+        console.log(`[inquiries] ${sheet}`, {
+          tsHeader: summary.debug.tsHeader,
+          tsColIdx: summary.debug.tsColIdx,
+          lastSeen,
+          lastSeenFormatted: summary.debug.lastSeenFormatted,
+          highWaterMarkFormatted: summary.debug.highWaterMarkFormatted,
+          totalCount: summary.totalCount,
+          newCount,
+        });
+      }
+      return summary;
     });
   } catch (error) {
     console.error('Error fetching inquiry summaries:', error);
