@@ -9,12 +9,7 @@ export const INQUIRY_SHEETS = [
 
 export type InquirySheet = (typeof INQUIRY_SHEETS)[number];
 
-const TIMESTAMP_COLUMN: Record<InquirySheet, string> = {
-  특허출원문의: '날짜',
-  신규홈피상담요청: '날짜',
-  개선의견: '진단일시',
-  기술진단결과: '진단일시',
-};
+const TIMESTAMP_KEYWORDS = ['타임스탬프', 'timestamp', '진단일시', '일시', '날짜', '시간'] as const;
 
 export interface SheetSummary {
   sheet: InquirySheet;
@@ -54,13 +49,19 @@ function getSheetId(): string | null {
   return id;
 }
 
-function findTimestampColumn(sheet: InquirySheet, headers: string[]): number {
-  const target = TIMESTAMP_COLUMN[sheet];
-  const exact = headers.findIndex((h) => h.trim() === target);
-  if (exact !== -1) return exact;
-  // Fallback: contains
-  const partial = headers.findIndex((h) => h.includes(target));
-  return partial;
+function findTimestampColumn(headers: string[]): number {
+  const normalized = headers.map((h) => h.trim().toLowerCase());
+  // Pass 1: exact match (case-insensitive)
+  for (const kw of TIMESTAMP_KEYWORDS) {
+    const idx = normalized.indexOf(kw.toLowerCase());
+    if (idx !== -1) return idx;
+  }
+  // Pass 2: contains
+  for (const kw of TIMESTAMP_KEYWORDS) {
+    const idx = normalized.findIndex((h) => h.includes(kw.toLowerCase()));
+    if (idx !== -1) return idx;
+  }
+  return -1;
 }
 
 function emptySummary(sheet: InquirySheet): SheetSummary {
@@ -92,7 +93,7 @@ export async function getInquirySummaries(
 
       const headers = values[0].map((h) => String(h ?? ''));
       const dataRows = values.slice(1);
-      const tsCol = findTimestampColumn(sheet, headers);
+      const tsCol = findTimestampColumn(headers);
       const lastSeen = lastSeenMap[sheet] ?? 0;
 
       if (tsCol === -1) {
@@ -165,7 +166,7 @@ export async function getInquiryDetail(sheet: InquirySheet): Promise<SheetDetail
 
     const headers = values[0].map((h) => String(h ?? ''));
     const dataRows = values.slice(1);
-    const tsCol = findTimestampColumn(sheet, headers);
+    const tsCol = findTimestampColumn(headers);
 
     let highWaterMark = tsCol === -1 ? dataRows.length : 0;
 
