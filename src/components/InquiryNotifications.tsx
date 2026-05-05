@@ -1,32 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const SHEETS = ['특허출원문의', '신규홈피상담요청', '개선의견', '기술진단결과'] as const;
 type Sheet = (typeof SHEETS)[number];
 
 interface Summary {
   sheet: Sheet;
-  rowCount: number;
+  totalCount: number;
+  newCount: number;
+  highWaterMark: number;
+  hasTimestamp: boolean;
 }
 
 interface Detail {
   sheet: Sheet;
   headers: string[];
   rows: string[][];
-}
-
-const STORAGE_PREFIX = 'iplp:inquiry:lastSeen:';
-
-function getLastSeen(sheet: Sheet): number {
-  if (typeof window === 'undefined') return 0;
-  const v = window.localStorage.getItem(STORAGE_PREFIX + sheet);
-  return v ? parseInt(v, 10) || 0 : 0;
-}
-
-function setLastSeen(sheet: Sheet, count: number) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(STORAGE_PREFIX + sheet, String(count));
 }
 
 const ACCENTS: Record<Sheet, { bar: string; badge: string; icon: string }> = {
@@ -38,7 +28,6 @@ const ACCENTS: Record<Sheet, { bar: string; badge: string; icon: string }> = {
 
 export default function InquiryNotifications() {
   const [summaries, setSummaries] = useState<Summary[]>([]);
-  const [lastSeenMap, setLastSeenMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -48,24 +37,23 @@ export default function InquiryNotifications() {
   const [submitting, setSubmitting] = useState(false);
   const [detail, setDetail] = useState<Detail | null>(null);
 
-  useEffect(() => {
-    const seen: Record<string, number> = {};
-    for (const s of SHEETS) seen[s] = getLastSeen(s);
-    setLastSeenMap(seen);
-
-    (async () => {
-      try {
-        const res = await fetch('/api/inquiries/summary');
-        if (!res.ok) throw new Error('failed');
-        const data = await res.json();
-        setSummaries(data.summaries || []);
-      } catch {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    })();
+  const fetchSummaries = useCallback(async () => {
+    try {
+      const res = await fetch('/api/inquiries/summary', { cache: 'no-store' });
+      if (!res.ok) throw new Error('failed');
+      const data = await res.json();
+      setSummaries(data.summaries || []);
+      setError(false);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchSummaries();
+  }, [fetchSummaries]);
 
   function openSheet(sheet: Sheet) {
     setActiveSheet(sheet);
@@ -75,10 +63,12 @@ export default function InquiryNotifications() {
   }
 
   function closeModal() {
+    const wasViewing = !!detail;
     setActiveSheet(null);
     setDetail(null);
     setPassword('');
     setPwError('');
+    if (wasViewing) fetchSummaries();
   }
 
   async function submitPassword(e: React.FormEvent) {
@@ -98,11 +88,6 @@ export default function InquiryNotifications() {
         return;
       }
       setDetail(data.detail);
-      const summary = summaries.find((s) => s.sheet === activeSheet);
-      if (summary) {
-        setLastSeen(activeSheet, summary.rowCount);
-        setLastSeenMap((prev) => ({ ...prev, [activeSheet]: summary.rowCount }));
-      }
     } catch {
       setPwError('요청 중 오류가 발생했습니다.');
     } finally {
@@ -129,9 +114,8 @@ export default function InquiryNotifications() {
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {SHEETS.map((sheet) => {
             const summary = summaries.find((s) => s.sheet === sheet);
-            const total = summary?.rowCount ?? 0;
-            const seen = lastSeenMap[sheet] ?? 0;
-            const newCount = Math.max(0, total - seen);
+            const total = summary?.totalCount ?? 0;
+            const newCount = summary?.newCount ?? 0;
             const accent = ACCENTS[sheet];
             return (
               <button

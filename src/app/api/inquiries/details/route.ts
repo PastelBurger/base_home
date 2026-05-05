@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'crypto';
 import { getInquiryDetail, isValidInquirySheet } from '@/lib/inquiries';
+import { setLastSeen } from '@/lib/lastSeen';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,5 +43,9 @@ export async function POST(request: Request) {
   if (!detail) {
     return NextResponse.json({ error: '데이터를 가져오지 못했습니다.' }, { status: 500 });
   }
+
+  // Mark as seen for all users (shared state)
+  await setLastSeen(sheet, detail.highWaterMark);
+
   return NextResponse.json({ detail });
 }

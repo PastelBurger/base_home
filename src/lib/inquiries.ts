@@ -9,15 +9,26 @@ export const INQUIRY_SHEETS = [
 
 export type InquirySheet = (typeof INQUIRY_SHEETS)[number];
 
+const TIMESTAMP_COLUMN: Record<InquirySheet, string> = {
+  특허출원문의: '날짜',
+  신규홈피상담요청: '날짜',
+  개선의견: '진단일시',
+  기술진단결과: '진단일시',
+};
+
 export interface SheetSummary {
   sheet: InquirySheet;
-  rowCount: number;
+  totalCount: number;
+  newCount: number;
+  highWaterMark: number;
+  hasTimestamp: boolean;
 }
 
 export interface SheetDetail {
   sheet: InquirySheet;
   headers: string[];
   rows: string[][];
+  highWaterMark: number;
 }
 
 function getSheetsClient(): sheets_v4.Sheets | null {
@@ -43,49 +54,139 @@ function getSheetId(): string | null {
   return id;
 }
 
-export async function getInquirySummaries(): Promise<SheetSummary[]> {
+function findTimestampColumn(sheet: InquirySheet, headers: string[]): number {
+  const target = TIMESTAMP_COLUMN[sheet];
+  const exact = headers.findIndex((h) => h.trim() === target);
+  if (exact !== -1) return exact;
+  // Fallback: contains
+  const partial = headers.findIndex((h) => h.includes(target));
+  return partial;
+}
+
+function emptySummary(sheet: InquirySheet): SheetSummary {
+  return { sheet, totalCount: 0, newCount: 0, highWaterMark: 0, hasTimestamp: false };
+}
+
+export async function getInquirySummaries(
+  lastSeenMap: Record<string, number>
+): Promise<SheetSummary[]> {
   const sheets = getSheetsClient();
   const spreadsheetId = getSheetId();
-  if (!sheets || !spreadsheetId) return [];
+  if (!sheets || !spreadsheetId) {
+    return INQUIRY_SHEETS.map(emptySummary);
+  }
 
-  const ranges = INQUIRY_SHEETS.map((s) => `${s}!A:A`);
+  const ranges = INQUIRY_SHEETS.map((s) => `${s}!A:Z`);
   try {
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId,
       ranges,
+      valueRenderOption: 'UNFORMATTED_VALUE',
+      dateTimeRenderOption: 'SERIAL_NUMBER',
     });
     const valueRanges = response.data.valueRanges || [];
+
     return INQUIRY_SHEETS.map((sheet, idx) => {
-      const values = valueRanges[idx]?.values || [];
-      // Subtract 1 for header row; clamp at 0
-      const rowCount = Math.max(0, values.length - 1);
-      return { sheet, rowCount };
+      const values = (valueRanges[idx]?.values || []) as unknown[][];
+      if (values.length === 0) return emptySummary(sheet);
+
+      const headers = values[0].map((h) => String(h ?? ''));
+      const dataRows = values.slice(1);
+      const tsCol = findTimestampColumn(sheet, headers);
+      const lastSeen = lastSeenMap[sheet] ?? 0;
+
+      if (tsCol === -1) {
+        const total = dataRows.length;
+        return {
+          sheet,
+          totalCount: total,
+          newCount: Math.max(0, total - lastSeen),
+          highWaterMark: total,
+          hasTimestamp: false,
+        };
+      }
+
+      let highWaterMark = 0;
+      let newCount = 0;
+      for (const row of dataRows) {
+        const cell = row[tsCol];
+        const ts = typeof cell === 'number' ? cell : 0;
+        if (ts > highWaterMark) highWaterMark = ts;
+        if (ts > lastSeen) newCount++;
+      }
+
+      return {
+        sheet,
+        totalCount: dataRows.length,
+        newCount,
+        highWaterMark,
+        hasTimestamp: true,
+      };
     });
   } catch (error) {
     console.error('Error fetching inquiry summaries:', error);
-    return INQUIRY_SHEETS.map((sheet) => ({ sheet, rowCount: 0 }));
+    return INQUIRY_SHEETS.map(emptySummary);
   }
 }
 
+function formatSerialDate(serial: number): string {
+  // Google Sheets serial date: days since 1899-12-30
+  const ms = (serial - 25569) * 86400 * 1000;
+  const d = new Date(ms);
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const mi = String(d.getUTCMinutes()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+}
+
+function looksLikeDateSerial(n: number): boolean {
+  // Reasonable range: 1990-01-01 (32874) to 2100-12-31 (73415)
+  return n > 30000 && n < 80000;
+}
+
 export async function getInquiryDetail(sheet: InquirySheet): Promise<SheetDetail | null> {
-  const sheets = getSheetsClient();
+  const sheetsApi = getSheetsClient();
   const spreadsheetId = getSheetId();
-  if (!sheets || !spreadsheetId) return null;
+  if (!sheetsApi || !spreadsheetId) return null;
 
   try {
-    const response = await sheets.spreadsheets.values.get({
+    const response = await sheetsApi.spreadsheets.values.get({
       spreadsheetId,
       range: `${sheet}!A:Z`,
+      valueRenderOption: 'UNFORMATTED_VALUE',
+      dateTimeRenderOption: 'SERIAL_NUMBER',
     });
-    const values = response.data.values || [];
+    const values = (response.data.values || []) as unknown[][];
     if (values.length === 0) {
-      return { sheet, headers: [], rows: [] };
+      return { sheet, headers: [], rows: [], highWaterMark: 0 };
     }
+
     const headers = values[0].map((h) => String(h ?? ''));
-    const rows = values.slice(1).map((row) =>
-      headers.map((_, i) => String(row[i] ?? ''))
+    const dataRows = values.slice(1);
+    const tsCol = findTimestampColumn(sheet, headers);
+
+    let highWaterMark = tsCol === -1 ? dataRows.length : 0;
+
+    const rows = dataRows.map((row) =>
+      headers.map((_, i) => {
+        const cell = row[i];
+        if (cell == null) return '';
+        if (typeof cell === 'number') {
+          if (i === tsCol) {
+            if (cell > highWaterMark) highWaterMark = cell;
+            return formatSerialDate(cell);
+          }
+          if (looksLikeDateSerial(cell)) return formatSerialDate(cell);
+          return String(cell);
+        }
+        if (typeof cell === 'boolean') return cell ? 'TRUE' : 'FALSE';
+        return String(cell);
+      })
     );
-    return { sheet, headers, rows };
+
+    return { sheet, headers, rows, highWaterMark };
   } catch (error) {
     console.error(`Error fetching detail for ${sheet}:`, error);
     return null;

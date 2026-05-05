@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getInquirySummaries } from '@/lib/inquiries';
+import { getInquirySummaries, INQUIRY_SHEETS } from '@/lib/inquiries';
+import { getLastSeenMap } from '@/lib/lastSeen';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const summaries = await getInquirySummaries();
+    const lastSeenMap = await getLastSeenMap(INQUIRY_SHEETS);
+    const summaries = await getInquirySummaries(lastSeenMap);
     return NextResponse.json({ summaries });
   } catch (error) {
     console.error('Inquiry summary API error:', error);
