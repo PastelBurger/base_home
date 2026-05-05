@@ -85,6 +85,29 @@ function safeFormatSerial(n: number): string | null {
   return formatSerialDate(n);
 }
 
+function toSerial(cell: unknown): number {
+  if (typeof cell === 'number') return cell;
+  if (typeof cell !== 'string') return 0;
+  const s = cell.trim();
+  if (!s) return 0;
+  const m = s.match(
+    /^(\d{4})[-./](\d{1,2})[-./](\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/
+  );
+  if (m) {
+    const y = +m[1];
+    const mo = +m[2] - 1;
+    const d = +m[3];
+    const hh = +(m[4] || 0);
+    const mi = +(m[5] || 0);
+    const se = +(m[6] || 0);
+    const ms = Date.UTC(y, mo, d, hh, mi, se);
+    return ms / 86400000 + 25569;
+  }
+  const native = Date.parse(s);
+  if (!Number.isNaN(native)) return native / 86400000 + 25569;
+  return 0;
+}
+
 export async function getInquirySummaries(
   lastSeenMap: Record<string, number>,
   options: { debug?: boolean } = {}
@@ -159,7 +182,7 @@ export async function getInquirySummaries(
       const samples: SheetDebug['sampleTimestamps'] = [];
       dataRows.forEach((row, ri) => {
         const cell = row[tsCol];
-        const ts = typeof cell === 'number' ? cell : 0;
+        const ts = toSerial(cell);
         if (ts > highWaterMark) highWaterMark = ts;
         const isNew = ts > lastSeen;
         if (isNew) newCount++;
@@ -167,7 +190,7 @@ export async function getInquirySummaries(
           samples.push({
             row: ri + 2,
             raw: cell,
-            formatted: typeof cell === 'number' ? safeFormatSerial(cell) : null,
+            formatted: ts > 0 ? safeFormatSerial(ts) : null,
             isNew,
           });
         }
@@ -253,11 +276,13 @@ export async function getInquiryDetail(sheet: InquirySheet): Promise<SheetDetail
       headers.map((_, i) => {
         const cell = row[i];
         if (cell == null) return '';
+        if (i === tsCol) {
+          const ts = toSerial(cell);
+          if (ts > highWaterMark) highWaterMark = ts;
+          if (typeof cell === 'number') return formatSerialDate(cell);
+          return String(cell);
+        }
         if (typeof cell === 'number') {
-          if (i === tsCol) {
-            if (cell > highWaterMark) highWaterMark = cell;
-            return formatSerialDate(cell);
-          }
           if (looksLikeDateSerial(cell)) return formatSerialDate(cell);
           return String(cell);
         }
