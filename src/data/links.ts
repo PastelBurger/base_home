@@ -42,6 +42,7 @@ export const categories: Category[] = [
       { id: 'patentdoc', name: '명세서최종본다운', url: 'https://www.patent.go.kr/smart/jsp/ka/oncert/ReqDocContent.do' },
       { id: 'emailtracking', name: '이메일분석', url: 'https://emailtrackingfrontend-production.up.railway.app/' },
       { id: 'stpviewer', name: 'STP뷰어', url: 'https://stp-viewer-production.up.railway.app/' },
+      { id: 'hlt', name: 'HLT생성', url: 'https://convertwordtohlt-production.up.railway.app/' },
     ]
   },
   {
