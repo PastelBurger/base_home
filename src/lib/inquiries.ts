@@ -108,13 +108,21 @@ function toSerial(cell: unknown): number {
   return 0;
 }
 
+export let lastSummariesError: string | null = null;
+export let lastSummariesEarlyExit: string | null = null;
+
 export async function getInquirySummaries(
   lastSeenMap: Record<string, number>,
   options: { debug?: boolean } = {}
 ): Promise<SheetSummary[]> {
+  lastSummariesError = null;
+  lastSummariesEarlyExit = null;
   const sheets = getSheetsClient();
   const spreadsheetId = getSheetId();
   if (!sheets || !spreadsheetId) {
+    lastSummariesEarlyExit = !sheets
+      ? 'getSheetsClient() returned null (missing/invalid GOOGLE_SERVICE_ACCOUNT_KEY)'
+      : 'getSheetId() returned null (missing GOOGLE_INQUIRY_SHEET_ID)';
     return INQUIRY_SHEETS.map(emptySummary);
   }
 
@@ -228,6 +236,7 @@ export async function getInquirySummaries(
     });
   } catch (error) {
     console.error('Error fetching inquiry summaries:', error);
+    lastSummariesError = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
     return INQUIRY_SHEETS.map(emptySummary);
   }
 }
